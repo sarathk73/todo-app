@@ -6,10 +6,9 @@
 }
 
 .wrapper {
-  width: 530px;
+  max-width: 530px;
   margin: 10px auto;
-  padding-left: 10px;
-  padding-right: 10px;
+  padding: 0 10px;
   color: #333;
 }
 
@@ -20,7 +19,6 @@
 
 .todo-item {
   margin-bottom: 10px;
-  width: 100%;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -28,8 +26,7 @@
 
 .todo-item span {
   flex-grow: 1;
-  margin-left: 10px;
-  margin-right: 10px;
+  margin: 0 10px;
   font-size: 22px;
   font-weight: bold;
   color: steelblue;
@@ -84,7 +81,7 @@ form {
 }
 
 input[type="text"] {
-  width: 100%;
+  width: calc(100% - 20px);
   padding: 10px;
   border-radius: 4px;
   border: 3px solid #333;
