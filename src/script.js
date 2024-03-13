@@ -67,21 +67,19 @@ function deleteTodo(key) {
   renderTodo(deletedTodo);
 }
 
-const form = document.querySelector(".js-form");
-form.addEventListener("submit", (event) => {
+function handleFormSubmit(event) {
   event.preventDefault();
   const input = document.querySelector(".js-todo-input");
+  const text = input.value.trim();
 
-  const text = input.value;
-  if (text.trim() !== "") {
+  if (text !== "") {
     addTodo(text);
     input.value = "";
     input.focus();
   }
-});
+}
 
-const list = document.querySelector(".js-todo-list");
-list.addEventListener("click", (event) => {
+function handleListClick(event) {
   const target = event.target;
   const itemKey = target.parentElement.dataset.key;
 
@@ -92,12 +90,21 @@ list.addEventListener("click", (event) => {
   if (target.classList.contains("js-delete-todo")) {
     deleteTodo(itemKey);
   }
-});
+}
 
-document.addEventListener("DOMContentLoaded", () => {
+function initializeTodos() {
   const storedTodos = localStorage.getItem("todoItems");
+
   if (storedTodos) {
     todoItems = JSON.parse(storedTodos);
     todoItems.forEach(renderTodo);
   }
-});
+}
+
+const form = document.querySelector(".js-form");
+form.addEventListener("submit", handleFormSubmit);
+
+const list = document.querySelector(".js-todo-list");
+list.addEventListener("click", handleListClick);
+
+document.addEventListener("DOMContentLoaded", initializeTodos);
