@@ -1,8 +1,10 @@
-let todoItems = [];
+let todoLists = []; // Store multiple to-do lists
+
 
 function saveToLocalStorage() {
-  localStorage.setItem("todoItems", JSON.stringify(todoItems));
+  localStorage.setItem("todoLists", JSON.stringify(todoLists));
 }
+
 
 function createTodoElement(todo) {
   const isChecked = todo.checked ? "done" : "";
@@ -19,53 +21,63 @@ function createTodoElement(todo) {
   return node;
 }
 
-function renderTodo(todo) {
+
+function renderTodo(todo, listElement) {
   saveToLocalStorage();
 
-  const list = document.querySelector(".js-todo-list");
-  const item = list.querySelector(`[data-key='${todo.id}']`);
+  const item = listElement.querySelector(`[data-key='${todo.id}']`);
 
   if (todo.deleted) {
     item && item.remove();
-    if (todoItems.length === 0) list.innerHTML = "";
+    if (listElement.children.length === 0) listElement.innerHTML = "";
     return;
   }
 
   const todoElement = createTodoElement(todo);
 
   if (item) {
-    list.replaceChild(todoElement, item);
+    listElement.replaceChild(todoElement, item);
   } else {
-    list.appendChild(todoElement);
+    listElement.appendChild(todoElement);
   }
 }
 
-function addTodo(text) {
+
+function addTodo(text, listIndex) {
   const todo = {
     text: text.trim().slice(0, 35),
     checked: false,
     id: Date.now(),
   };
 
-  todoItems.push(todo);
-  renderTodo(todo);
+  todoLists[listIndex].items.push(todo);
+  renderTodo(todo, todoLists[listIndex].element);
 }
 
-function toggleDone(key) {
-  const index = todoItems.findIndex((item) => item.id === Number(key));
-  todoItems[index].checked = !todoItems[index].checked;
-  renderTodo(todoItems[index]);
+
+function toggleDone(listIndex, key) {
+  const index = todoLists[listIndex].items.findIndex(
+    (item) => item.id === Number(key)
+  );
+  todoLists[listIndex].items[index].checked = !todoLists[listIndex].items[
+    index
+  ].checked;
+  renderTodo(todoLists[listIndex].items[index], todoLists[listIndex].element);
 }
 
-function deleteTodo(key) {
-  const index = todoItems.findIndex((item) => item.id === Number(key));
+
+function deleteTodo(listIndex, key) {
+  const index = todoLists[listIndex].items.findIndex(
+    (item) => item.id === Number(key)
+  );
   const deletedTodo = {
     deleted: true,
-    ...todoItems[index],
+    ...todoLists[listIndex].items[index],
   };
-  todoItems.splice(index, 1);
-  renderTodo(deletedTodo);
+  todoLists[listIndex].items.splice(index, 1);
+  renderTodo(deletedTodo, todoLists[listIndex].element);
 }
+
 
 function handleFormSubmit(event) {
   event.preventDefault();
@@ -73,38 +85,46 @@ function handleFormSubmit(event) {
   const text = input.value.trim();
 
   if (text !== "") {
-    addTodo(text);
+    addTodo(text, 0); // For now, assume all new tasks are added to the first list
     input.value = "";
     input.focus();
   }
 }
 
+
 function handleListClick(event) {
   const target = event.target;
   const itemKey = target.parentElement.dataset.key;
+  const listIndex = Array.from(target.closest('.todo-list').parentElement.children).indexOf(target.closest('.todo-list'));
 
   if (target.classList.contains("js-tick")) {
-    toggleDone(itemKey);
+    toggleDone(listIndex, itemKey);
   }
 
   if (target.classList.contains("js-delete-todo")) {
-    deleteTodo(itemKey);
+    deleteTodo(listIndex, itemKey);
   }
 }
+
 
 function initializeTodos() {
-  const storedTodos = localStorage.getItem("todoItems");
+  const storedTodoLists = localStorage.getItem("todoLists");
 
-  if (storedTodos) {
-    todoItems = JSON.parse(storedTodos);
-    todoItems.forEach(renderTodo);
+  if (storedTodoLists) {
+    todoLists = JSON.parse(storedTodoLists);
+    todoLists.forEach((list) => {
+      list.items.forEach((todo) => renderTodo(todo, list.element));
+    });
   }
 }
+
 
 const form = document.querySelector(".js-form");
 form.addEventListener("submit", handleFormSubmit);
 
-const list = document.querySelector(".js-todo-list");
-list.addEventListener("click", handleListClick);
+const lists = document.querySelectorAll(".js-todo-list");
+lists.forEach((list) => {
+  list.addEventListener("click", handleListClick);
+});
 
 document.addEventListener("DOMContentLoaded", initializeTodos);
